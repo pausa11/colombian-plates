@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { PlateType } from '../types';
 import { getPlateType } from '../classifier';
 
@@ -12,109 +12,113 @@ export interface PlateProps {
     className?: string;
 }
 
-export const Plate: React.FC<PlateProps> = ({
-    plate,
-    type,
-    city = 'BOGOTA D.C.',
-    showHoles = true,
-    width = 300,
-    style,
-    className,
-}) => {
+export const Plate: React.FC<PlateProps> = ({ plate, type, city = 'colombia', showHoles = true, width = 300, style, className }) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [measuredWidth, setMeasuredWidth] = useState<number>(0);
+
+    useEffect(() => {
+        if (!containerRef.current) return;
+        const observer = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                if (entry.contentRect.width > 0) {
+                    setMeasuredWidth(entry.contentRect.width);
+                }
+            }
+        });
+
+        observer.observe(containerRef.current);
+        return () => observer.disconnect();
+    }, []);
+
     const detectedType = type || getPlateType(plate) || PlateType.PARTICULAR;
+    const isMoto = detectedType === PlateType.MOTO || detectedType === 'motorcycle' as any;
 
-    // Colors and styles based on type (future proofing)
-    // Standard Particular/Public is Yellow with Black Text.
-    // Diplomatic is Blue or Red?
-    // Moto is same yellow usually.
+    let backgroundColor = '#FFD700';
 
-    const backgroundColor = '#FFD700'; // Standard Yellow
+    if (detectedType === PlateType.PUBLICO || detectedType === 'public' as any) {
+        backgroundColor = '#FFFFFF';
+    } else if (detectedType === PlateType.DIPLOMATICO || detectedType === 'diplomatic' as any) {
+        backgroundColor = '#4169E1';
+    } else if (detectedType === PlateType.REMOLQUE || detectedType === 'trailer' as any) {
+        backgroundColor = '#2E8B57';
+    } else if (detectedType === PlateType.MOTO || detectedType === 'motorcycle' as any) {
+        backgroundColor = '#FFD700';
+    }
+
     const borderColor = '#000000';
-    const textColor = '#000000';
-    const borderRadius = 10;
+    let textColor = '#000000';
 
-    // Aspect ratio for car plates is usually 2:1 (300x150mm approx)
-    // We'll use a wrapper with flexbox.
+    if (detectedType === PlateType.DIPLOMATICO || detectedType === 'diplomatic' as any ||
+        detectedType === PlateType.REMOLQUE || detectedType === 'trailer' as any) {
+        textColor = '#FFFFFF';
+    }
+
+    // Determine effective width for calculations
+    const effectiveWidth = (typeof width === 'number' ? width : measuredWidth) || 300;
+    const borderRadius = effectiveWidth * 0.05;
 
     const displayPlate = plate.toUpperCase();
-    // Split logic: usually 3 letters - logo - 3 numbers
-    // Or match regex to split visually
 
-    const letters = displayPlate.replace(/[^A-Z]/g, '').slice(0, 3);
-    const numbers = displayPlate.replace(/[^0-9]/g, '').slice(0, 3);
+    const letters = displayPlate.substring(0, 3);
+    const numbers = displayPlate.substring(3);
 
-    // Simple rendering logic
-    // If we can't cleanly split 3/3 (e.g. it's Moto 3-2-1), we just render full string.
-    const isStandardCar = /^[A-Z]{3}\d{3}$/.test(displayPlate);
+    const isStandardLayout = /^[A-Z]{3}\d{2,3}[A-Z]?$/.test(displayPlate);
+
+    const aspectRatio = '2 / 1';
+    const mainFontSize = effectiveWidth * 0.18;
+    const cityFontSize = effectiveWidth * 0.06;
 
     return (
         <div
+            ref={containerRef}
             className={className}
             style={{
                 width: width,
-                aspectRatio: '2 / 1',
+                aspectRatio,
                 backgroundColor,
                 borderRadius,
-                border: `4px solid ${borderColor}`,
+                border: `${Math.max(2, effectiveWidth * 0.015)}px solid ${borderColor}`,
                 position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: '5%',
+                padding: '5% 3%',
                 boxSizing: 'border-box',
-                fontFamily: '"FakeReceipt", "Helvetica Neue", Arial, sans-serif', // Fallback
-                boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                fontFamily: '"FakeReceipt", "Helvetica Neue", Arial, sans-serif',
+                boxShadow: `0 ${effectiveWidth * 0.015}px ${effectiveWidth * 0.02}px rgba(0,0,0,0.3)`,
                 ...style,
             }}
         >
-            {/* Top Screws */}
             {showHoles && (
-                <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', padding: '0 10%' }}>
-                    <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#333' }} />
-                    <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#333' }} />
+                <div id="top-holes" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', padding: '0 8%' }}>
+                    <div style={{ width: effectiveWidth * 0.04, height: effectiveWidth * 0.04, borderRadius: '50%', backgroundColor: '#333' }} />
+                    <div style={{ width: effectiveWidth * 0.04, height: effectiveWidth * 0.04, borderRadius: '50%', backgroundColor: '#333' }} />
                 </div>
             )}
 
-            {/* Main Content */}
-            <div style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: typeof width === 'number' ? width * 0.25 : '3rem',
-                fontWeight: 'bold',
-                letterSpacing: 2,
-                color: textColor,
-                textShadow: '1px 1px 0px rgba(255,255,255,0.5)'
-            }}>
-                {isStandardCar ? (
+            <div id="plate-content" style={{ flex: 1, display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', fontSize: mainFontSize, fontWeight: 'bold', letterSpacing: effectiveWidth * 0.005, color: textColor, textShadow: `${effectiveWidth * 0.003}px ${effectiveWidth * 0.003}px 0px rgba(255,255,255,0.5)`, overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '100%', lineHeight: 'normal', paddingTop: 0 }}>
+                {isStandardLayout ? (
                     <>
                         <span>{letters}</span>
-                        <span style={{ margin: '0 10px', fontSize: '0.4em' }}>●</span>
+                        <span style={{ margin: `0 ${effectiveWidth * 0.025}px`, fontSize: '0.4em', alignSelf: 'center' }}></span>
                         <span>{numbers}</span>
                     </>
                 ) : (
-                    <span>{displayPlate}</span>
+                    <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '100%' }}>
+                        {displayPlate}
+                    </span>
                 )}
             </div>
 
-            {/* City */}
-            <div style={{
-                textTransform: 'uppercase',
-                fontSize: typeof width === 'number' ? width * 0.08 : '1rem',
-                fontWeight: 600,
-                color: textColor,
-                marginTop: -10
-            }}>
+            <div id="city-name" style={{ textTransform: 'uppercase', fontSize: cityFontSize, fontWeight: 600, color: textColor, marginTop: isMoto ? 5 : -5, marginBottom: showHoles ? 0 : '2%', maxWidth: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {city}
             </div>
 
-            {/* Bottom Screws */}
             {showHoles && (
-                <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', padding: '0 10%' }}>
-                    <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#333' }} />
-                    <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#333' }} />
+                <div id="bottom-holes" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', padding: '0 8%' }}>
+                    <div style={{ width: effectiveWidth * 0.04, height: effectiveWidth * 0.04, borderRadius: '50%', backgroundColor: '#333' }} />
+                    <div style={{ width: effectiveWidth * 0.04, height: effectiveWidth * 0.04, borderRadius: '50%', backgroundColor: '#333' }} />
                 </div>
             )}
         </div>
