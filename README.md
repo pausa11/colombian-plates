@@ -8,6 +8,11 @@ A lightweight, zero-dependency Node.js/TypeScript library to validate, format, a
 - **Formatting**: Normalizes inputs (handles lower case, spaces, dashes).
 - **TypeScript Support**: First-class type definitions included.
 
+
+## Visual Examples
+
+![Colombian Plates Render](./assets/colombian_plates_render.png)
+
 ## Installation
 
 ```bash
@@ -38,6 +43,29 @@ if (type === PlateType.PARTICULAR) {
 } else if (type === PlateType.MOTO) {
     console.log('It is a motorcycle');
 }
+```
+
+## React Component Usage
+
+You can use the `Plate` component to render license plates in your React application.
+
+```typescript
+import { Plate } from 'colombian-plates/dist/components/Plate';
+
+// Basic usage (type inferred from plate number)
+<Plate plate="ABC123" />
+
+// Public service vehicle
+<Plate plate="SIT987" />
+
+// Motorcycle
+<Plate plate="XYZ12D" />
+
+// Custom width
+<Plate plate="ABC123" width={400} />
+
+// With city
+<Plate plate="ABC123" city="BOGOTA D.C." />
 ```
 
 ## Supported Plate Types
