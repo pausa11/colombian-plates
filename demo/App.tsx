@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-// @ts-ignore
 import { Plate } from '../src/components/Plate';
-// @ts-ignore
 import { PlateType } from '../src/types';
 
 const App = () => {
@@ -39,7 +37,6 @@ const App = () => {
                 </div>
                 <div>
                     <h3>Public (Service)</h3>
-                    {/* @ts-ignore */}
                     <Plate plate="TAX456" type="public" width={300} />
                     <p style={{ marginTop: 5, fontSize: 12 }}>White</p>
                 </div>

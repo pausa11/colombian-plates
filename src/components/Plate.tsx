@@ -4,7 +4,7 @@ import { getPlateType } from '../classifier';
 
 export interface PlateProps {
     plate: string;
-    type?: PlateType; // Optional override, otherwise inferred
+    type?: PlateType | 'public' | 'publica' | 'private' | 'particular' | 'diplomatic' | 'motorcycle' | 'trailer' | string; // Allow string for flexibility
     city?: string; // e.g., "BOGOTA D.C."
     showHoles?: boolean;
     width?: number | string;
@@ -31,25 +31,28 @@ export const Plate: React.FC<PlateProps> = ({ plate, type, city = 'colombia', sh
     }, []);
 
     const detectedType = type || getPlateType(plate) || PlateType.PARTICULAR;
-    const isMoto = detectedType === PlateType.MOTO || detectedType === 'motorcycle' as any;
+    // Normalize type for comparison
+    const typeStr = String(detectedType).toLowerCase();
+
+    const isMoto = typeStr === 'moto' || typeStr === 'motorcycle' || detectedType === PlateType.MOTO;
 
     let backgroundColor = '#FFD700';
 
-    if (detectedType === PlateType.PUBLICO || detectedType === 'public' as any) {
+    if (typeStr === 'public' || typeStr === 'publico' || typeStr === 'publica' || detectedType === PlateType.PUBLICO) {
         backgroundColor = '#FFFFFF';
-    } else if (detectedType === PlateType.DIPLOMATICO || detectedType === 'diplomatic' as any) {
+    } else if (typeStr === 'diplomatic' || typeStr === 'diplomatico' || detectedType === PlateType.DIPLOMATICO) {
         backgroundColor = '#4169E1';
-    } else if (detectedType === PlateType.REMOLQUE || detectedType === 'trailer' as any) {
+    } else if (typeStr === 'trailer' || typeStr === 'remolque' || detectedType === PlateType.REMOLQUE) {
         backgroundColor = '#2E8B57';
-    } else if (detectedType === PlateType.MOTO || detectedType === 'motorcycle' as any) {
+    } else if (isMoto) {
         backgroundColor = '#FFD700';
     }
 
     const borderColor = '#000000';
     let textColor = '#000000';
 
-    if (detectedType === PlateType.DIPLOMATICO || detectedType === 'diplomatic' as any ||
-        detectedType === PlateType.REMOLQUE || detectedType === 'trailer' as any) {
+    if (typeStr === 'diplomatic' || typeStr === 'diplomatico' || detectedType === PlateType.DIPLOMATICO ||
+        typeStr === 'trailer' || typeStr === 'remolque' || detectedType === PlateType.REMOLQUE) {
         textColor = '#FFFFFF';
     }
 
