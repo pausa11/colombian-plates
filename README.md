@@ -55,8 +55,8 @@ import { Plate } from 'colombian-plates/dist/components/Plate';
 // Basic usage (type inferred from plate number)
 <Plate plate="ABC123" />
 
-// Public service vehicle
-<Plate plate="SIT987" />
+// Public service vehicle (White background)
+<Plate plate="SIT987" type="public" />
 
 // Motorcycle
 <Plate plate="XYZ12D" />

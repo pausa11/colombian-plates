@@ -1,13 +1,20 @@
 {
   "name": "colombian-plates",
-  "version": "1.0.1",
-  "description": "",
+  "version": "1.1.0",
+  "description": "A lightweight, zero-dependency Node.js/TypeScript library to validate, format, and classify Colombian vehicle license plates.",
   "main": "dist/index.js",
   "scripts": {
     "test": "jest",
     "build": "tsc"
   },
-  "keywords": [],
+  "keywords": [
+    "colombia",
+    "license-plate",
+    "vehicle",
+    "react",
+    "typescript",
+    "validation"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
